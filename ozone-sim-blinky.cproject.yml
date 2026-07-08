@@ -15,7 +15,7 @@ project:
 
     # The RTOS is excluded from the Sim build: SEGGER Ozone-Sim does not model
     # SysTick / the SCB / NVIC, so RTX5 cannot run in it. The Sim build is
-    # bare-metal (see Blinky.c) and links no RTOS.
+    # bare-metal (see blinky.c) and links no RTOS.
     - component: CMSIS:OS Tick:SysTick
       not-for-context: .Sim
     - component: CMSIS:RTOS2:Keil RTX5&Source
@@ -37,7 +37,7 @@ project:
         - file: README.md
     - group: Source Files
       files:
-        - file: Blinky.c
+        - file: blinky.c
         - file: retarget_stdio.c
           define:
             - RETARGET_STDIO_UART: 2

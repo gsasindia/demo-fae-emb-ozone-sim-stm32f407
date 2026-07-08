@@ -32,7 +32,7 @@ solution:
       target-set:
         - set:
           images:
-            - project-context: Blinky.Debug
+            - project-context: ozone-sim-blinky.Debug
 
   # List of different build configurations.
   build-types:
@@ -46,7 +46,7 @@ solution:
 
     # Hardware-free build for the SEGGER Ozone-Sim instruction-set simulator.
     # OZONE_SIM routes stdio to semihosting and ends the run after a few
-    # blink cycles (see retarget_stdio.c and Blinky.c).
+    # blink cycles (see retarget_stdio.c and blinky.c).
     - type: Sim
       debug: on
       optimize: none
@@ -55,5 +55,5 @@ solution:
 
   # List related projects.
   projects:
-    - project: Blinky.cproject.yml
+    - project: ozone-sim-blinky.cproject.yml
   compiler: AC6
