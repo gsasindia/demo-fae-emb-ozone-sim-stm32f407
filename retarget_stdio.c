@@ -17,9 +17,106 @@
  * limitations under the License.
  *
  *      Name:    retarget_stdio.c
- *      Purpose: Retarget stdio to CMSIS UART
+ *      Purpose: Retarget stdio to a CMSIS-Driver UART (real hardware) or to
+ *               Arm semihosting (SEGGER Ozone-Sim, no peripherals).
  *
+ * Two back-ends selected at build time:
+ *
+ *   OZONE_SIM defined   -> stdout/stderr go to Arm semihosting so that
+ *                          printf()/puts() appear in the Ozone-Sim terminal
+ *                          without any UART. Also provides sim_exit(), which
+ *                          ends the simulation via the semihosting exit call.
+ *   OZONE_SIM undefined  -> stdout/stderr go to a CMSIS-Driver UART, exactly
+ *                          as on the STM32F407G-DISC1 board (unchanged).
  *---------------------------------------------------------------------------*/
+
+#include <stdint.h>
+
+/* Exported functions (identical signatures for both back-ends) */
+extern int stdio_init     (void);
+extern int stderr_putchar (int ch);
+extern int stdout_putchar (int ch);
+extern int stdin_getchar  (void);
+
+#ifdef OZONE_SIM
+/*===========================================================================
+ * Semihosting back-end - used when running inside SEGGER Ozone-Sim.
+ *
+ * Arm semihosting is a debugger-hosted service: the target issues "BKPT 0xAB"
+ * with an operation number in r0 and an argument pointer in r1, and the
+ * simulator (acting as the host) performs the I/O. No peripherals required.
+ *===========================================================================*/
+
+/* Arm semihosting operation numbers (see "Arm semihosting" spec). */
+#define SEMIHOST_SYS_WRITEC        0x03U   /* r1 -> single character to write   */
+#define SEMIHOST_SYS_WRITE0        0x04U   /* r1 -> null-terminated string      */
+#define SEMIHOST_SYS_EXIT          0x18U   /* r1  = reason code                 */
+#define ADP_STOPPED_APPLICATIONEXIT 0x20026U
+
+/* Issue one semihosting call and return the host's result. */
+static int semihost_call (int op, void *arg) {
+  register int          r0 __asm__("r0") = op;
+  register void * const r1 __asm__("r1") = arg;
+  __asm__ volatile ("bkpt 0xAB" : "+r"(r0) : "r"(r1) : "memory");
+  return r0;
+}
+
+/* No hardware to bring up in the simulator. */
+int stdio_init (void) {
+  return 0;
+}
+
+/* Write one character to the host terminal via semihosting. */
+int stdout_putchar (int ch) {
+  char c = (char)ch;
+  semihost_call(SEMIHOST_SYS_WRITEC, &c);
+  return ch;
+}
+
+int stderr_putchar (int ch) {
+  return stdout_putchar(ch);
+}
+
+/* No console input under Ozone-Sim. */
+int stdin_getchar (void) {
+  return -1;
+}
+
+/* Write a null-terminated string straight to the host terminal.
+   Note: the simulator build uses these direct semihosting writes instead of
+   printf(). Because RTX5 is linked, the C library routes printf()'s stdout lock
+   through an RTX mutex, and RTX enters the kernel with an SVC - which Ozone-Sim
+   cannot dispatch (it models the core + memory + semihosting, not SysTick/NVIC/
+   SCB). Going straight to semihosting keeps the demo free of the RTOS. */
+void sim_write (const char *s) {
+  semihost_call(SEMIHOST_SYS_WRITE0, (void *)s);
+}
+
+/* Write an unsigned value in decimal (no C library / printf involved). */
+void sim_write_u32 (uint32_t value) {
+  char buf[11];
+  unsigned i = sizeof(buf) - 1U;
+  buf[i] = '\0';
+  do {
+    buf[--i] = (char)('0' + (value % 10U));
+    value /= 10U;
+  } while (value != 0U);
+  sim_write(&buf[i]);
+}
+
+/* End the simulation via the semihosting exit call. Ozone-Sim reports the
+   application exit and stops with return code 0. (This demo only ever exits
+   successfully; `code` is accepted for API symmetry.) */
+void sim_exit (int code) {
+  (void)code;
+  semihost_call(SEMIHOST_SYS_EXIT, (void *)ADP_STOPPED_APPLICATIONEXIT);
+  for (;;) { }   /* not reached */
+}
+
+#else
+/*===========================================================================
+ * CMSIS-Driver UART back-end - used on the STM32F407G-DISC1 board.
+ *===========================================================================*/
 
 #ifdef   CMSIS_target_header
 #include CMSIS_target_header
@@ -33,12 +130,6 @@
 
 // Compile-time configuration
 #define UART_BAUDRATE     115200
-
-// Exported functions
-extern int stdio_init     (void);
-extern int stderr_putchar (int ch);
-extern int stdout_putchar (int ch);
-extern int stdin_getchar  (void);
 
 #ifndef CMSIS_target_header
 extern ARM_DRIVER_USART   ARM_Driver_USART_(RETARGET_STDIO_UART);
@@ -137,3 +228,5 @@ int stdin_getchar (void) {
 
   return (int)buf[0];
 }
+
+#endif /* OZONE_SIM */

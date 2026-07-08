@@ -79,7 +79,15 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+#ifdef OZONE_SIM
+  /* SEGGER Ozone-Sim models only the CPU core, memory and semihosting - not the
+     RCC / FLASH / GPIO / USART peripherals that HAL_Init(), SystemClock_Config()
+     and the MX_*_Init() functions below access. In the Sim build, run the
+     bare-metal demo straight from reset; app_main() does not return here (it
+     ends with a semihosting exit). On real hardware (no OZONE_SIM) this block is
+     absent and the normal peripheral bring-up runs. */
+  app_main();
+#endif
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/

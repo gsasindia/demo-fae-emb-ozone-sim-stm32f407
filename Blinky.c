@@ -17,8 +17,60 @@
  * limitations under the License.
  *---------------------------------------------------------------------------*/
 
+/*
+  This application has two build variants that share app_main():
+
+    * Board builds (Debug / Release) run the full CMSIS-RTOS2 (Keil RTX5)
+      Blinky: an LED thread and a Button thread on the STM32F407G-DISC1.
+
+    * The Sim build (OZONE_SIM) runs a bare-metal reduction of the same blink
+      narrative for the SEGGER Ozone-Sim instruction-set simulator. Ozone-Sim
+      models the Cortex-M4 core, memory and semihosting, but NOT the system
+      peripherals an RTOS needs (SysTick for the kernel tick, SVC/PendSV
+      vectoring via the SCB/NVIC). So the Sim build links no RTOS at all (see
+      Blinky.cproject.yml) and simply prints the blink activity over semihosting
+      and exits - which is exactly what makes it a clean, hardware-free CI test.
+*/
+
 #include <stdio.h>
 #include "main.h"
+
+#ifdef OZONE_SIM
+/*===========================================================================
+ * Simulator build - bare metal, semihosting, no RTOS.
+ *===========================================================================*/
+
+/* Direct semihosting output helpers (implemented in retarget_stdio.c). These
+   are used instead of printf() so the demo never touches the C library's
+   thread-safe stdout lock, which would otherwise call into RTX. */
+extern void sim_write     (const char *s);
+extern void sim_write_u32 (uint32_t value);
+extern void sim_exit      (int code);
+
+/* Number of blink cycles to run before ending the simulation. */
+#define SIM_BLINK_CYCLES   5U
+
+int app_main (void) {
+  sim_write("\nGSAS STM32F407 Blinky - running hardware-free in SEGGER Ozone-Sim\n\n");
+
+  for (uint32_t cycle = 0U; cycle < SIM_BLINK_CYCLES; cycle++) {
+    sim_write("cycle "); sim_write_u32(cycle); sim_write(": LED0 on\n");
+    sim_write("cycle "); sim_write_u32(cycle); sim_write(": LED0 off\n");
+  }
+
+  sim_write("\n");
+  sim_write_u32(SIM_BLINK_CYCLES);
+  sim_write(" blink cycles complete - ending Ozone-Sim run.\n");
+
+  sim_exit(0);                                  // Semihosting exit, code 0
+  return 0;                                     // Not reached
+}
+
+#else
+/*===========================================================================
+ * Board build - CMSIS-RTOS2 (Keil RTX5) Blinky on STM32F407G-DISC1.
+ *===========================================================================*/
+
 #include "cmsis_os2.h"
 #include "cmsis_vio.h"
 
@@ -115,3 +167,5 @@ int app_main (void) {
   osKernelStart();                              // Start thread execution
   return 0;
 }
+
+#endif /* OZONE_SIM */

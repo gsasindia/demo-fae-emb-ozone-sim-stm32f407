@@ -44,6 +44,15 @@ solution:
       debug: off
       optimize: balanced
 
+    # Hardware-free build for the SEGGER Ozone-Sim instruction-set simulator.
+    # OZONE_SIM routes stdio to semihosting and ends the run after a few
+    # blink cycles (see retarget_stdio.c and Blinky.c).
+    - type: Sim
+      debug: on
+      optimize: none
+      define:
+        - OZONE_SIM
+
   # List related projects.
   projects:
     - project: Blinky.cproject.yml
