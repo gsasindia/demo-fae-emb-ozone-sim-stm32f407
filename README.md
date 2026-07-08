@@ -4,7 +4,7 @@ Hardware-free STM32F407 firmware demo for **SEGGER Ozone-Sim** — run and
 regression-test embedded firmware on a *simulated* Cortex-M4, with no board and
 no J-Link. Built on the Arm Keil RTX5 Blinky reference project.
 
-> Topics: `gsas-internal` `demo` `embedded-systems` `fae` `stm32` `arm-cortex` `keil-mdk` `segger` `claude-code`
+> Topics:  `demo` `embedded-systems` `fae` `stm32` `arm-cortex` `keil-mdk` `segger`
 
 ## What this demonstrates
 
@@ -69,17 +69,8 @@ cbuild ozone-sim-blinky.csolution.yml --context ozone-sim-blinky.Debug+STM32F407
 Tools: CMSIS-Toolbox 2.14, Arm Compiler for Embedded (AC6) 6.24, CMSIS 6,
 CMSIS-RTX 5.9.1, STM32F4xx_DFP 3.1.
 
-## What to show and say
 
-1. "This is an ordinary STM32F407 Keil/CMSIS project — it also builds for the
-   DISC1 board with a full RTX5 kernel."
-2. Run `./run-sim.sh`. "No board, no J-Link. Ozone-Sim runs the ELF on a
-   simulated Cortex-M4, streams its semihosting output, and the app exits 0."
-3. "Because it returns an exit code, that same run is a CI regression gate —
-   catch firmware regressions before hardware is even in the lab."
-4. The teaching point: Ozone-Sim models the **core, memory and semihosting**, not
-   the peripherals — so the simulator build is deliberately bare-metal. The
-   engineering notes explain exactly why: [docs/ozone-sim-demo.md](docs/ozone-sim-demo.md).
+[docs/ozone-sim-demo.md](docs/ozone-sim-demo.md).
 
 ## Board build behaviour (real hardware)
 
@@ -102,10 +93,6 @@ CMSIS-RTX 5.9.1, STM32F4xx_DFP 3.1.
 - **Arm Keil MDK / CMSIS-Toolbox** — build system and RTX5.
 - **Arm Compiler for Embedded (AC6)** — compiler.
 
-First shown: July 2026 · Owned by `@field-applications`, co-owned by
-`@embedded-systems`.
 
 ---
 
-Repo and branch naming follow the GSAS
-[NAMING-CONVENTIONS](https://github.com/gsasindia/onboarding/blob/main/NAMING-CONVENTIONS.md).
