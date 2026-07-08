@@ -15,12 +15,12 @@ hardware-free CI regression test. Used by Field Applications to demo Ozone-Sim.
 - Runtime: SEGGER Ozone-Sim (bundled with Ozone ≥ V3.50).
 
 ## Key Files
-- `Blinky.c` — app. `#ifdef OZONE_SIM` = bare-metal semihosting demo; `#else` =
+- `blinky.c` — app. `#ifdef OZONE_SIM` = bare-metal semihosting demo; `#else` =
   RTX5 threads (LED + button).
 - `retarget_stdio.c` — `OZONE_SIM` = semihosting back-end (`sim_write`,
   `sim_write_u32`, `sim_exit`); `#else` = CMSIS-Driver UART for the board.
-- `Blinky.csolution.yml` — defines the `Sim` build-type (`define: OZONE_SIM`).
-- `Blinky.cproject.yml` — excludes RTX5 + OS-Tick from the `Sim` context.
+- `ozone-sim-blinky.csolution.yml` — defines the `Sim` build-type (`define: OZONE_SIM`).
+- `ozone-sim-blinky.cproject.yml` — excludes RTX5 + OS-Tick from the `Sim` context.
 - `STM32CubeMX/.../Src/main.c` — `USER CODE BEGIN 1` calls `app_main()` early
   under `OZONE_SIM` to skip HAL/clock bring-up.
 - `run-sim.sh` — builds (if `cbuild` present) and runs the ELF in Ozone-Sim.
@@ -31,15 +31,17 @@ hardware-free CI regression test. Used by Field Applications to demo Ozone-Sim.
   NVIC, SCB/VTOR, or device peripherals (RCC/FLASH/GPIO/USART). The `Sim` build
   must therefore stay RTOS-free and must not touch peripherals. Do not
   reintroduce RTX, `printf()`, or HAL calls into the `OZONE_SIM` path.
-- Keep the board (`Debug`/`Release`) builds byte-for-byte the original RTX5
-  Blinky — all simulator changes are guarded by `OZONE_SIM`.
+- The board (`Debug`/`Release`) builds run the full RTX5 Blinky (LED + button).
+  CubeMX bring-up was slimmed to what the app uses: only GPIO + USART2 are
+  initialised. Unused I2C1/I2S3/SPI1/USB-OTG init, their ISR and MSP code were
+  removed from the generated sources. All simulator behaviour is `OZONE_SIM`-guarded.
 - Sim output uses direct semihosting (not `printf`) on purpose; see docs.
 - Repo/branch/commit naming follows gsasindia `onboarding/NAMING-CONVENTIONS.md`.
 
 ## Common Tasks
-- Build the sim: `cbuild Blinky.csolution.yml --context Blinky.Sim+STM32F407G-DISC1`.
+- Build the sim: `cbuild ozone-sim-blinky.csolution.yml --context ozone-sim-blinky.Sim+STM32F407G-DISC1`.
 - Run it: `./run-sim.sh` (expects exit code 0).
-- Change how many blink cycles run: `SIM_BLINK_CYCLES` in `Blinky.c`.
-- Build for the board: `--context Blinky.Debug+STM32F407G-DISC1`.
+- Change how many blink cycles run: `SIM_BLINK_CYCLES` in `blinky.c`.
+- Build for the board: `--context ozone-sim-blinky.Debug+STM32F407G-DISC1`.
 - Refresh the committed demo binary: copy the built
-  `out/Blinky/STM32F407G-DISC1/Sim/Blinky.axf` to `prebuilt/Blinky-sim.axf`.
+  `out/ozone-sim-blinky/STM32F407G-DISC1/Sim/ozone-sim-blinky.axf` to `prebuilt/ozone-sim-blinky-sim.axf`.

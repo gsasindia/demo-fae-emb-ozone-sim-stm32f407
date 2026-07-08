@@ -52,18 +52,18 @@ Target application performed semihosting exit with return code 0 (0x00) ...
 drops straight into a CI pipeline. The equivalent direct command is:
 
 ```bash
-ozone-sim --standalone --chip STM32F407VE prebuilt/Blinky-sim.axf
+ozone-sim --standalone --chip STM32F407VE prebuilt/ozone-sim-blinky-sim.axf
 ```
 
 ## Building from source
 
 This is a CMSIS-Toolbox `csolution` project (Arm Keil MDK). Open it in **VS Code
 with the Arm CMSIS Solution extension** (Keil Studio) and build the
-`Blinky.Sim+STM32F407G-DISC1` context, or from a CMSIS-Toolbox command line:
+`ozone-sim-blinky.Sim+STM32F407G-DISC1` context, or from a CMSIS-Toolbox command line:
 
 ```bash
-cbuild Blinky.csolution.yml --context Blinky.Sim+STM32F407G-DISC1   # simulator build
-cbuild Blinky.csolution.yml --context Blinky.Debug+STM32F407G-DISC1 # board build
+cbuild ozone-sim-blinky.csolution.yml --context ozone-sim-blinky.Sim+STM32F407G-DISC1   # simulator build
+cbuild ozone-sim-blinky.csolution.yml --context ozone-sim-blinky.Debug+STM32F407G-DISC1 # board build
 ```
 
 Tools: CMSIS-Toolbox 2.14, Arm Compiler for Embedded (AC6) 6.24, CMSIS 6,

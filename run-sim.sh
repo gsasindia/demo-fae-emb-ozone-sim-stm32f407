@@ -14,20 +14,20 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-CTX="Blinky.Sim+STM32F407G-DISC1"
+CTX="ozone-sim-blinky.Sim+STM32F407G-DISC1"
 CHIP="STM32F407VE"     # The DISC1 MCU is an STM32F407VG. Ozone-Sim's device
                        # database ships the pin-compatible STM32F407VE - same
                        # Cortex-M4 core, and this small image fits its memory.
 
-ELF_BUILT="out/Blinky/STM32F407G-DISC1/Sim/Blinky.axf"
-ELF_PREBUILT="prebuilt/Blinky-sim.axf"
+ELF_BUILT="out/ozone-sim-blinky/STM32F407G-DISC1/Sim/ozone-sim-blinky.axf"
+ELF_PREBUILT="prebuilt/ozone-sim-blinky-sim.axf"
 
 # 1. Build with the CMSIS-Toolbox if it is on PATH (e.g. after 'vcpkg activate'
 #    or inside the Arm Keil Studio environment). Otherwise fall back to a
 #    previously built or the committed prebuilt ELF.
 if command -v cbuild >/dev/null 2>&1; then
   echo ">> Building $CTX ..."
-  cbuild Blinky.csolution.yml --context "$CTX"
+  cbuild ozone-sim-blinky.csolution.yml --context "$CTX"
 fi
 
 if   [[ -f "$ELF_BUILT"    ]]; then ELF="$ELF_BUILT"

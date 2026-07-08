@@ -49,9 +49,9 @@ So the `Sim` build is deliberately RTOS-free and skips hardware bring-up.
 ## How the `Sim` build is put together
 
 Selected by the `OZONE_SIM` define (set by the `Sim` build-type in
-`Blinky.csolution.yml`):
+`ozone-sim-blinky.csolution.yml`):
 
-- **No RTOS.** `Blinky.cproject.yml` excludes `CMSIS:RTOS2:Keil RTX5&Source` and
+- **No RTOS.** `ozone-sim-blinky.cproject.yml` excludes `CMSIS:RTOS2:Keil RTX5&Source` and
   `CMSIS:OS Tick:SysTick` from the `Sim` context (`not-for-context: .Sim`). With
   RTX unlinked, the C library falls back to its single-threaded (no-`SVC`) locks.
 - **Skip hardware bring-up.** The CubeMX `main()` calls `app_main()` from its
@@ -59,7 +59,7 @@ Selected by the `OZONE_SIM` define (set by the `Sim` build-type in
   when `OZONE_SIM` is defined. `app_main()` runs the demo and never returns, so
   the peripheral init below it never executes. (`USER CODE` regions survive
   CubeMX regeneration.)
-- **Bare-metal blink + semihosting output.** `Blinky.c`'s `OZONE_SIM` path prints
+- **Bare-metal blink + semihosting output.** `blinky.c`'s `OZONE_SIM` path prints
   the blink cycles and exits. Output uses **direct semihosting** writes
   (`SYS_WRITE0`) rather than `printf()`, to stay off the C library entirely
   (`retarget_stdio.c`).
@@ -72,7 +72,7 @@ The board builds (`Debug`, `Release`) are untouched: full RTX5 Blinky over UART.
 ## Running
 
 ```bash
-ozone-sim --standalone --chip STM32F407VE prebuilt/Blinky-sim.axf
+ozone-sim --standalone --chip STM32F407VE prebuilt/ozone-sim-blinky-sim.axf
 # or:
 ./run-sim.sh
 ```
